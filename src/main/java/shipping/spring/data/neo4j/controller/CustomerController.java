@@ -47,6 +47,11 @@ public class CustomerController {
 	}
 
 
+//	@PostMapping(path = "/members", consumes = "application/json", produces = "application/json")
+//	public void addMember(@RequestBody Member member) {
+//		//code
+//	}
+
 	@GetMapping(value="/savegraph")
 	public String createPurchases() {
 		Address address = new Address("streetName1", 1, "SanJose", 95134L);
