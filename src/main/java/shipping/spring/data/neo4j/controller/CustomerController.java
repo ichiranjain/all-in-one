@@ -2,6 +2,8 @@ package shipping.spring.data.neo4j.controller;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import shipping.spring.data.neo4j.domain.Address;
 import shipping.spring.data.neo4j.domain.Order;
@@ -17,7 +19,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -52,6 +57,9 @@ public class CustomerController {
 		this.customerService = customerService;
 	}
 
+	@JsonIgnore
+	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CustomerController.class);
+
     @GetMapping("/graph")
 	public Map<String, Object> graph(@RequestParam(value = "limit",required = false) Integer limit) {
 		return customerService.graph(limit == null ? 100 : limit);
@@ -65,7 +73,7 @@ public class CustomerController {
 //	}
 
 	@PostMapping(value="/saveGraphPost" , consumes = "application/json" , produces = "application/json")
-	public String createEntities(@RequestBody OrderRequest orderRequest) throws Exception {
+	public String createOrders(@RequestBody OrderRequest orderRequest) throws Exception {
 
 
 		//MOCK DATA
@@ -135,6 +143,44 @@ public class CustomerController {
 
 
 		return "Successfully created entities";
+	}
+
+
+	@GetMapping(value="/getOrders", produces = "application/json")
+	public List<OrderRequest> getOrders() {
+		List<OrderRequest> returnOrders = new ArrayList<OrderRequest>();
+		Iterable<Order> orders = orderRepository.findAll();
+		if (!orders.iterator().hasNext()) {
+			return returnOrders;
+		} else {
+			for (Order order : orders) {
+				OrderRequest orderRequest = new OrderRequest();
+				try {
+					if (order != null && order.getOrderNumber() != null) {
+						orderRequest.setOrderNumber(order.getOrderNumber());
+					}
+					if (order != null && order.getOrderType() != null) {
+						orderRequest.setOrderType(order.getOrderType());
+					}
+					if (order != null && order.getDestinationAddress() != null) {
+						orderRequest.setDestinationAddress(order.getDestinationAddress());
+					}
+					if (order != null && order.getSourceAddress() != null) {
+						orderRequest.setSourceAddress(order.getSourceAddress());
+					}
+					if (order != null && order.getPerson().getName() != null) {
+						orderRequest.setPersonName(order.getPerson().getName());
+					}
+					if (order != null && order.getPerson().getBorn() > 0) {
+						orderRequest.setPersonBorn(order.getPerson().getBorn());
+					}
+					returnOrders.add(orderRequest);
+				} catch (Exception ex) {
+					LOGGER.error("Exception while accessing order objects:{}", ex.getMessage());
+				}
+			}
+		}
+		return returnOrders;
 	}
 	@GetMapping("/graphAdd")
 	public Map<String, Object> graphAdd(@RequestParam(value = "limit",required = false) Integer limit) {

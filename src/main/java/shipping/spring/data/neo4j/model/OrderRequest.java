@@ -13,16 +13,17 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
+import shipping.spring.data.neo4j.domain.Address;
 
 @ApiModel(value = "Path Request Object, containing flow information(five-tuple).")
 @JsonInclude(Include.NON_NULL)
 public class OrderRequest {
     private Long orderNumber;
     private String orderType;
-    private String sourceAddress;
-    private String destinationAddress;
+    private Address sourceAddress;
+    private Address destinationAddress;
     private String personName;
-    private String personBorn;
+    private int personBorn;
 
     @JsonIgnore
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderRequest.class);
@@ -40,7 +41,7 @@ public class OrderRequest {
         this.personBorn = orderRequest.personBorn;
     }
 
-    public OrderRequest(Long orderNumber, String orderType, String sourceAddress, String destinationAddress, String personName, String personBorn) {
+    public OrderRequest(Long orderNumber, String orderType, Address sourceAddress, Address destinationAddress, String personName, int personBorn) {
         try {
             setOrderNumber(orderNumber);
             setOrderType(orderType);
@@ -81,7 +82,7 @@ public class OrderRequest {
     }
 
     @ApiModelProperty(value = "Set Order Source Address", required = true)
-    public void setSourceAddress(String sourceAddress) throws  Exception {
+    public void setSourceAddress(Address sourceAddress) throws  Exception {
         if(sourceAddress == null){
             throw new Exception("Empty Source Address");
         }else{
@@ -89,12 +90,12 @@ public class OrderRequest {
         }
     }
 
-    public String getSourceAddress() {
+    public Address getSourceAddress() {
         return this.sourceAddress;
     }
 
     @ApiModelProperty(value = "Set Order Destination Address", required = true)
-    public void setDestinationAddress(String destinationAddress) throws  Exception {
+    public void setDestinationAddress(Address destinationAddress) throws  Exception {
         if(destinationAddress == null){
             throw new Exception("Empty Destination Address");
         }else{
@@ -102,7 +103,7 @@ public class OrderRequest {
         }
     }
 
-    public String getDestinationAddress() {
+    public Address getDestinationAddress() {
         return this.destinationAddress;
     }
 
@@ -120,15 +121,15 @@ public class OrderRequest {
     }
 
     @ApiModelProperty(value = "Set Order Person Born", required = true)
-    public void setPersonBorn(String personBorn) throws  Exception {
-        if(personBorn == null){
-            throw new Exception("Empty Person Born");
+    public void setPersonBorn(int personBorn) throws  Exception {
+        if(personBorn < 0){
+            throw new Exception("Person Born Cannot be negative");
         }else{
             this.personBorn = personBorn;
         }
     }
 
-    public String getPersonBorn() {
+    public int getPersonBorn() {
         return this.personBorn;
     }
 
@@ -148,7 +149,7 @@ public class OrderRequest {
         result = prime * result + ((sourceAddress == null) ? 0 : sourceAddress.hashCode());
         result = prime * result + ((destinationAddress == null) ? 0 : destinationAddress.hashCode());
         result = prime * result + ((personName == null) ? 0 : personName.hashCode());
-        result = prime * result + ((personBorn == null) ? 0 : personBorn.hashCode());
+        result = prime * result + ((personBorn < 0) ? 0 : personBorn);
         return result;
     }
 
@@ -200,11 +201,11 @@ public class OrderRequest {
         } else if (!personName.equals(other.personName)) {
             return false;
         }
-        if (personBorn == null) {
-            if (other.personBorn != null) {
+        if (personBorn <  0) {
+            if (other.personBorn < 0) {
                 return false;
             }
-        } else if (!personBorn.equals(other.personBorn)) {
+        } else if (personBorn != other.personBorn) {
             return false;
         }
 
